@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - Usuarios</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css"> 
+</head>
+<body class="min-h-screen">
+    <div id="app" class="p-4 sm:p-8">
+        <header class="mb-8 flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-extrabold text-blue-700 border-b-4 border-blue-500 pb-2">
+                    Gestión de Usuarios Registrados
+                </h1>
+                <p class="text-gray-600 mt-1">Visualización de todos los usuarios de la aplicación.</p>
+            </div>
+            <a href="index.html" class="px-4 py-2 bg-gray-500 text-white font-semibold rounded-lg shadow-md hover:bg-gray-600 transition duration-150">
+                Volver a Canchas
+            </a>
+        </header>
+
+        <div id="messageContainer" class="mb-4 hidden p-3 rounded-lg text-white font-medium" role="alert"></div>
+
+        <div class="bg-white p-6 rounded-xl shadow-lg">
+            <h2 class="text-2xl font-bold mb-4 text-gray-700">Lista de Usuarios</h2>
+            
+            <div id="usersContainer" class="overflow-x-auto">
+                <table class="min-w-full data-table">
+                    <thead>
+                        <tr>
+                            <th>Nombre Completo</th>
+                            <th>Correo Electrónico</th>
+                            <th>Teléfono</th>
+                            <th>Fecha de Registro</th>
+                            <th>ID del Documento</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersBody">
+                        </tbody>
+                </table>
+            </div>
+
+            <div id="loading" class="p-4 text-center text-gray-500">Cargando usuarios...</div>
+            
+            <div id="noData" class="p-4 text-center text-gray-500 hidden">No hay usuarios registrados.</div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, 
+            collection, 
+            onSnapshot, 
+            query
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- CONFIGURACIÓN E INICIALIZACIÓN DE FIREBASE (AÑADE TU CONFIG AQUÍ) ---
+        // ¡IMPORTANTE! Copia tu configuración exacta de firebaseConfig aquí
+        const firebaseConfig = {
+             apiKey: "TU_API_KEY",
+             authDomain: "TU_AUTH_DOMAIN",
+             projectId: "TU_PROJECT_ID",
+             storageBucket: "TU_STORAGE_BUCKET",
+             messagingSenderId: "TU_MESSAGING_SENDER_ID",
+             appId: "TU_APP_ID"
+        };
+        const USERS_COLLECTION_PATH = 'usuarios'; // La colección exacta que mostraste en la imagen
+        const LOGIN_PAGE = 'login.html';
+
+        let db;
+        let auth;
+
+        const usersBody = document.getElementById('usersBody');
+        const loading = document.getElementById('loading');
+        const noData = document.getElementById('noData');
+        const messageContainer = document.getElementById('messageContainer');
+
+        function showMessage(text, colorClass) {
+            messageContainer.textContent = text;
+            messageContainer.className = `mb-4 p-3 rounded-lg text-white font-medium ${colorClass}`;
+            messageContainer.classList.remove('hidden');
+            setTimeout(() => {
+                messageContainer.classList.add('hidden');
+            }, 3000);
+        }
+
+        async function initializeFirebase() {
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                
+                // *** PROTECCIÓN DE RUTA: Redirige si no está autenticado ***
+                onAuthStateChanged(auth, (user) => {
+                    if (!user) {
+                        window.location.href = LOGIN_PAGE;
+                    } else {
+                        // Usuario autenticado, comienza a cargar los datos de usuarios
+                        startUsersListener();
+                    }
+                });
+
+            } catch (error) {
+                console.error("Error al inicializar Firebase:", error);
+                showMessage("Error al conectar con la base de datos.", 'bg-red-500');
+            }
+        }
+
+        // --- OBTENER Y ESCUCHAR CAMBIOS EN USUARIOS ---
+        function startUsersListener() {
+            const q = query(collection(db, USERS_COLLECTION_PATH));
+            loading.classList.remove('hidden');
+
+            onSnapshot(q, (snapshot) => {
+                usersBody.innerHTML = ''; // Limpia la tabla
+                loading.classList.add('hidden');
+                
+                if (snapshot.empty) {
+                    noData.classList.remove('hidden');
+                } else {
+                    noData.classList.add('hidden');
+                    snapshot.docs.forEach(doc => {
+                        renderUser(doc);
+                    });
+                }
+            }, (error) => {
+                console.error("Error al escuchar cambios en usuarios:", error);
+                showMessage("Error al cargar la lista de usuarios. Revisa las Reglas de Seguridad.", 'bg-red-500');
+            });
+        }
+
+        function renderUser(doc) {
+            const data = doc.data();
+            const row = document.createElement('tr');
+            row.className = 'hover:bg-blue-50 transition duration-150';
+            
+            // Formatear la fecha para que sea legible
+            let fechaRegistro = 'N/A';
+            if (data.fecha_registro && data.fecha_registro.toDate) {
+                // Si es un Timestamp de Firestore
+                fechaRegistro = data.fecha_registro.toDate().toLocaleDateString('es-ES', {
+                    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                });
+            } else if (data.fecha_registro) {
+                // Si es una string (como en tu imagen)
+                fechaRegistro = data.fecha_registro;
+            }
+
+            row.innerHTML = `
+                <td class="font-semibold">${data.nombre || 'N/A'} ${data.apellido || ''}</td>
+                <td>${data.email || 'N/A'}</td>
+                <td>${data.telefono || 'N/A'}</td>
+                <td class="text-sm text-gray-500">${fechaRegistro}</td>
+                <td class="text-xs text-gray-400">${doc.id}</td>
+            `;
+            usersBody.appendChild(row);
+        }
+
+        // Inicia la aplicación al cargar la página
+        initializeFirebase();
+
+    </script>
+</body>
+</html>

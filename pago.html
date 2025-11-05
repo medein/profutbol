@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subir Comprobante de Pago</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+        .container {
+            padding-top: 2rem;
+        }
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            max-width: 600px;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="container mx-auto flex justify-center items-center flex-col">
+        <header class="w-full max-w-2xl text-center mb-8">
+            <h1 class="text-4xl font-extrabold text-blue-700">Confirmación de Pago</h1>
+            <p class="text-gray-600 mt-2 text-lg">Sube el comprobante para confirmar tu reserva.</p>
+        </header>
+
+        <div id="loading" class="text-center py-12">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+            <p class="mt-4 text-gray-500">Cargando datos de la reserva...</p>
+        </div>
+
+        <div id="reservaInfoCard" class="card hidden mb-6 border-l-4 border-blue-500">
+            <h2 class="text-xl font-semibold mb-4 pb-2 text-gray-800">Detalle de tu Reserva</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                <div class="space-y-1">
+                    <p class="font-medium text-gray-700">Cancha:</p>
+                    <p id="infoCancha" class="text-gray-900 font-bold text-base">N/A</p>
+                </div>
+                
+                <div class="space-y-1">
+                    <p class="font-medium text-gray-700">Fecha y Hora:</p>
+                    <p id="infoFechaHora" class="text-gray-900 text-base">N/A</p>
+                </div>
+
+                <div class="space-y-1 col-span-full">
+                    <p class="font-medium text-gray-700">ID de Reserva:</p>
+                    <p id="infoReservaId" class="text-gray-500 text-xs truncate select-all">N/A</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="pagoCard" class="card hidden">
+            <h2 class="text-2xl font-bold mb-6 text-green-700">Subir Comprobante</h2>
+
+            <div id="messageBox" class="p-4 mb-4 rounded-lg text-sm hidden shadow-md" role="alert"></div>
+
+            <p class="mb-4 text-gray-600">Sube la imagen de tu comprobante de transferencia o depósito. Esto pondrá tu reserva en estado **"Pendiente de Aprobación"**.</p>
+            
+            <form id="pagoForm">
+                
+                <div class="mb-6">
+                    <label for="pagoComprobanteFile" class="block text-sm font-medium text-gray-700 mb-1">Comprobante (Imagen o PDF)</label>
+                    <input type="file" id="pagoComprobanteFile" required class="mt-1 block w-full text-gray-900 bg-gray-50 rounded-lg border border-gray-300 cursor-pointer focus:outline-none file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" accept="image/*,application/pdf">
+                </div>
+
+                <button type="submit" id="btnSubmitPago" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition shadow-lg hover:shadow-xl">
+                    Subir Comprobante y Finalizar
+                </button>
+                <a href="index.html" class="w-full block text-center mt-4 text-sm text-gray-500 hover:text-gray-700 transition">Volver a mis reservas</a>
+            </form>
+        </div>
+        
+    </div>
+    
+    <script type="module">
+        // --- 1. IMPORTACIONES ---
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, 
+            doc, 
+            getDoc, 
+            updateDoc 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { 
+            getStorage, 
+            ref, 
+            uploadBytes, 
+            getDownloadURL 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
+
+
+        // --- 2. CONFIGURACIÓN ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyAWCPbrKbfVNieWdjIWOmsr27sqAWzEefk", 
+            authDomain: "profutbolapp.firebaseapp.com",
+            projectId: "profutbolapp",
+            storageBucket: "profutbolapp.firebasestorage.app",
+            messagingSenderId: "187277252854",
+            appId: "1:187277252854:web:73d371c14b28f764de74d7"
+        };
+        
+        const LOGIN_PAGE = 'login.html'; 
+        const INDEX_PAGE = 'index.html'; 
+        const RESERVAS_COLLECTION_PATH = 'reservas';
+        
+        let auth;
+        let db;
+        let storage;
+        let currentReservaId = null;
+        let currentUserId = null;
+
+        // Elementos del DOM
+        const loadingScreen = document.getElementById('loading');
+        const reservaInfoCard = document.getElementById('reservaInfoCard');
+        const pagoCard = document.getElementById('pagoCard');
+        const pagoForm = document.getElementById('pagoForm');
+        const infoCancha = document.getElementById('infoCancha');
+        const infoFechaHora = document.getElementById('infoFechaHora');
+        const infoReservaId = document.getElementById('infoReservaId');
+        const messageBox = document.getElementById('messageBox');
+        const btnSubmitPago = document.getElementById('btnSubmitPago');
+        const comprobanteFile = document.getElementById('pagoComprobanteFile');
+
+
+        // --- 3. FUNCIONES DE UTILIDAD ---
+
+        function showMessage(text, type = 'success') {
+            messageBox.innerHTML = text; 
+            messageBox.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-green-100', 'text-green-700', 'bg-yellow-100', 'text-yellow-700', 'border-red-500', 'border-green-500', 'border-yellow-500');
+            
+            if (type === 'error') {
+                messageBox.classList.add('bg-red-100', 'text-red-700', 'border-l-4', 'border-red-500');
+            } else if (type === 'warning') {
+                messageBox.classList.add('bg-yellow-100', 'text-yellow-700', 'border-l-4', 'border-yellow-500');
+            } else { // success o default
+                messageBox.classList.add('bg-green-100', 'text-green-700', 'border-l-4', 'border-green-500');
+            }
+            messageBox.classList.remove('hidden');
+        }
+        
+        function formatDate(timestamp) {
+            const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            if (timestamp && timestamp.toDate) {
+                return timestamp.toDate().toLocaleString('es-GT', options);
+            }
+            return 'N/A';
+        }
+        
+        function getReservaIdFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('reservaId');
+        }
+
+        // --- 4. LÓGICA DE FIRESTORE Y STORAGE ---
+
+        async function fetchReservaData(reservaId, uid) {
+            if (!reservaId || !uid) {
+                showMessage("Falta ID de reserva o usuario.", 'error');
+                return null;
+            }
+            
+            try {
+                // Generar la referencia del documento usando la base de datos correcta.
+                const reservaRef = doc(db, RESERVAS_COLLECTION_PATH, reservaId); 
+                const reservaSnap = await getDoc(reservaRef);
+
+                if (reservaSnap.exists()) {
+                    const data = reservaSnap.data();
+                    
+                    // Doble verificación de seguridad: solo el dueño puede ver/pagar
+                    if (data.id_usuario !== uid) {
+                        showMessage("Acceso denegado. Esta reserva no te pertenece.", 'error');
+                        return null;
+                    }
+                    
+                    // Si ya tiene comprobante
+                    if (data.pago_comprobante_url) {
+                        showMessage("Ya has subido un comprobante para esta reserva. Revisa el estado en tu panel principal.", 'warning');
+                        setTimeout(() => {
+                           window.location.href = INDEX_PAGE;
+                        }, 3000);
+                        return null; // Evita mostrar el formulario de pago si ya está pagada
+                    }
+
+
+                    return data;
+
+                } else {
+                    showMessage("Reserva no encontrada.", 'error');
+                    return null;
+                }
+            } catch (error) {
+                console.error("Error al obtener datos de la reserva:", error);
+                showMessage("Error al cargar la reserva.", 'error');
+                return null;
+            }
+        }
+        
+        function displayReservaInfo(reserva) {
+            infoCancha.textContent = reserva.id_cancha || 'N/A';
+            infoFechaHora.textContent = formatDate(reserva.fecha_reserva);
+            infoReservaId.textContent = currentReservaId;
+            
+            // Mostrar los contenedores
+            reservaInfoCard.classList.remove('hidden');
+            pagoCard.classList.remove('hidden');
+        }
+
+        async function handlePagoSubmit(e) {
+            e.preventDefault();
+            
+            if (!currentReservaId) {
+                showMessage("Error interno: ID de reserva faltante.", 'error');
+                return;
+            }
+            
+            const file = comprobanteFile.files[0];
+
+            if (!file) {
+                showMessage("Por favor, selecciona el archivo del comprobante.", 'error');
+                return;
+            }
+            
+            btnSubmitPago.disabled = true;
+            btnSubmitPago.textContent = 'Subiendo...';
+            showMessage("Subiendo comprobante, por favor espera...", 'warning');
+
+            let downloadURL = null;
+            let firestoreUpdated = false;
+            
+            try {
+                // CORRECCIÓN SINTÁCTICA: file.name.split('.').pop()
+                const fileExtension = file.name.split('.').pop();
+                const uniqueFileName = `${currentReservaId}_${Date.now()}.${fileExtension}`; 
+
+                // --- 1. Subir archivo a Firebase Storage ---
+                const storageRef = ref(storage, `comprobantes/${currentReservaId}/${uniqueFileName}`); 
+                const snapshot = await uploadBytes(storageRef, file);
+                downloadURL = await getDownloadURL(snapshot.ref);
+                
+                // Mensaje intermedio: Éxito en Storage
+                showMessage("Comprobante subido a Storage. Intentando actualizar el estado de la reserva...", 'warning'); 
+                
+            } catch (storageError) {
+                console.error("Error en Storage:", storageError);
+                showMessage(`❌ **Error Crítico al subir el comprobante a Storage**: ${storageError.message}.`, 'error');
+                btnSubmitPago.disabled = false;
+                btnSubmitPago.textContent = 'Subir Comprobante y Finalizar';
+                return; // Detenemos la ejecución si Storage falla
+            }
+
+            // --- 2. Actualizar la reserva en Firestore ---
+            try {
+                const reservaRef = doc(db, RESERVAS_COLLECTION_PATH, currentReservaId);
+                
+                await updateDoc(reservaRef, {
+                    pago_comprobante_url: downloadURL, 
+                    estado_pago: 'pendiente_aprobacion', 
+                });
+                
+                firestoreUpdated = true;
+                
+            } catch (firestoreError) {
+                // Ocurre si las reglas de Firestore son restrictivas (como en tu caso original)
+                console.error("Error en Firestore:", firestoreError);
+                firestoreUpdated = false;
+            }
+
+            // --- 3. Mensaje Final y Redirección ---
+            if (firestoreUpdated) {
+                // Éxito total 
+                showMessage("✅ **¡Comprobante subido y reserva marcada como Pendiente de Aprobación!** Redirigiendo...", 'success');
+            } else {
+                // Fallo en Firestore, pero la imagen sí subió (la subida es lo importante para el usuario)
+                showMessage("⚠️ **ADVERTENCIA: Comprobante subido**, pero falló la actualización en la base de datos. **Tu pago está en el sistema, pero revisa tus reglas de Firestore.** Redirigiendo...", 'warning');
+            }
+            
+            // Redirigimos siempre después del mensaje.
+            setTimeout(() => {
+                window.location.href = INDEX_PAGE; 
+            }, 3000);
+        }
+        
+        // --- 5. INICIALIZACIÓN ---
+
+        function initializeFirebase() {
+            const app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            // IMPORTANTE: Asegúrate de que 'base1reservas' es el nombre de tu base de datos secundaria si estás usando una
+            db = getFirestore(app, 'base1reservas'); 
+            storage = getStorage(app);
+
+            onAuthStateChanged(auth, async (user) => { 
+                loadingScreen.classList.add('hidden');
+                
+                if (!user) {
+                    window.location.href = LOGIN_PAGE; 
+                    return;
+                } 
+                
+                currentUserId = user.uid;
+                currentReservaId = getReservaIdFromUrl();
+
+                if (!currentReservaId) {
+                    showMessage("Error: No se encontró el ID de la reserva en la URL.", 'error');
+                    return;
+                }
+
+                // Cargar los datos de la reserva
+                const reservaData = await fetchReservaData(currentReservaId, currentUserId);
+                
+                if (reservaData) {
+                    displayReservaInfo(reservaData);
+                } else {
+                     // El error se maneja dentro de fetchReservaData
+                }
+            });
+            
+            pagoForm.addEventListener('submit', handlePagoSubmit);
+        }
+
+        initializeFirebase();
+    </script>
+</body>
+</html>
