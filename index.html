@@ -1,89 +1,882 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Welcome to Firebase Hosting</title>
-
-    <!-- update the version number as needed -->
-    <script defer src="/__/firebase/12.5.0/firebase-app-compat.js"></script>
-    <!-- include only the Firebase features as you need -->
-    <script defer src="/__/firebase/12.5.0/firebase-auth-compat.js"></script>
-    <script defer src="/__/firebase/12.5.0/firebase-database-compat.js"></script>
-    <script defer src="/__/firebase/12.5.0/firebase-firestore-compat.js"></script>
-    <script defer src="/__/firebase/12.5.0/firebase-functions-compat.js"></script>
-    <script defer src="/__/firebase/12.5.0/firebase-messaging-compat.js"></script>
-    <script defer src="/__/firebase/12.5.0/firebase-storage-compat.js"></script>
-    <script defer src="/__/firebase/12.5.0/firebase-analytics-compat.js"></script>
-    <script defer src="/__/firebase/12.5.0/firebase-remote-config-compat.js"></script>
-    <script defer src="/__/firebase/12.5.0/firebase-performance-compat.js"></script>
-    <!-- 
-      initialize the SDK after all desired features are loaded, set useEmulator to false
-      to avoid connecting the SDK to running emulators.
-    -->
-    <script defer src="/__/firebase/init.js?useEmulator=true"></script>
-
-    <style media="screen">
-      body { background: #ECEFF1; color: rgba(0,0,0,0.87); font-family: Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; }
-      #message { background: white; max-width: 360px; margin: 100px auto 16px; padding: 32px 24px; border-radius: 3px; }
-      #message h2 { color: #ffa100; font-weight: bold; font-size: 16px; margin: 0 0 8px; }
-      #message h1 { font-size: 22px; font-weight: 300; color: rgba(0,0,0,0.6); margin: 0 0 16px;}
-      #message p { line-height: 140%; margin: 16px 0 24px; font-size: 14px; }
-      #message a { display: block; text-align: center; background: #039be5; text-transform: uppercase; text-decoration: none; color: white; padding: 16px; border-radius: 4px; }
-      #message, #message a { box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); }
-      #load { color: rgba(0,0,0,0.4); text-align: center; font-size: 13px; }
-      @media (max-width: 600px) {
-        body, #message { margin-top: 0; background: white; box-shadow: none; }
-        body { border-top: 16px solid #ffa100; }
-      }
-    </style>
-  </head>
-  <body>
-    <div id="message">
-      <h2>Welcome</h2>
-      <h1>Firebase Hosting Setup Complete</h1>
-      <p>You're seeing this because you've successfully setup Firebase Hosting. Now it's time to go build something extraordinary!</p>
-      <a target="_blank" href="https://firebase.google.com/docs/hosting/">Open Hosting Documentation</a>
-    </div>
-    <p id="load">Firebase SDK Loading&hellip;</p>
-
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const loadEl = document.querySelector('#load');
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
-        // // The Firebase SDK is initialized and available here!
-        //
-        // firebase.auth().onAuthStateChanged(user => { });
-        // firebase.database().ref('/path/to/ref').on('value', snapshot => { });
-        // firebase.firestore().doc('/foo/bar').get().then(() => { });
-        // firebase.functions().httpsCallable('yourFunction')().then(() => { });
-        // firebase.messaging().requestPermission().then(() => { });
-        // firebase.storage().ref('/path/to/ref').getDownloadURL().then(() => { });
-        // firebase.analytics(); // call to activate
-        // firebase.analytics().logEvent('tutorial_completed');
-        // firebase.performance(); // call to activate
-        //
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
-
-        try {
-          let app = firebase.app();
-          let features = [
-            'auth', 
-            'database', 
-            'firestore',
-            'functions',
-            'messaging', 
-            'storage', 
-            'analytics', 
-            'remoteConfig',
-            'performance',
-          ].filter(feature => typeof app[feature] === 'function');
-          loadEl.textContent = `Firebase SDK loaded with ${features.join(', ')}`;
-        } catch (e) {
-          console.error(e);
-          loadEl.textContent = 'Error loading the Firebase SDK, check the console.';
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Reservas - ProFutbol</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles.css"> 
+    <style>
+        /* Estilo para la lista de búsqueda de clientes */
+        .search-container {
+            position: relative;
         }
-      });
+    </style>
+</head>
+<body>
+    
+    <div class="container mx-auto p-4">
+        <header class="flex justify-between items-center mb-6 border-b border-gray-200 pb-4">
+            <h1 class="text-3xl font-bold text-blue-700">Gestión de Reservas</h1>
+            <div class="flex items-center">
+                 <a href="index.html" class="mr-4 text-gray-600 hover:text-gray-900 font-semibold transition">
+                     ← Volver a Canchas
+                 </a>
+                 <button id="btnLogout" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded transition">
+                     Cerrar Sesión
+                 </button>
+            </div>
+        </header>
+
+        <div id="contentReservas">
+            <div class="bg-white p-6 rounded-lg shadow-xl mb-6">
+                <h2 class="text-xl font-semibold mb-4" id="formTitleReserva">Crear Nueva Reserva</h2>
+                <form id="reservaForm">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        
+                        <div class="search-container admin-only hidden"> 
+                            <label for="reservaClienteNombre" class="block text-sm font-medium text-gray-700">Buscar Cliente (Nombre)</label>
+                            <input type="text" id="reservaClienteNombre" class="mt-1 block w-full border border-gray-300 rounded-md p-2" placeholder="Escribe el nombre del cliente">
+                            <div id="searchResults" class="absolute z-10 bg-white border border-gray-300 w-full mt-1 max-h-40 overflow-y-auto shadow-lg hidden">
+                            </div>
+                            <input type="hidden" id="reservaUserId"> 
+                            <input type="hidden" id="reservaUserEmail"> 
+                        </div>
+
+                        <div>
+                            <label for="reservaCanchaSelect" class="block text-sm font-medium text-gray-700">Seleccionar Cancha</label>
+                            <select id="reservaCanchaSelect" required class="mt-1 block w-full border border-gray-300 rounded-md p-2">
+                                <option value="">Cargando Canchas...</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="reservaFechaHora" class="block text-sm font-medium text-gray-700">Fecha y Hora</label>
+                            <input type="datetime-local" id="reservaFechaHora" required class="mt-1 block w-full border border-gray-300 rounded-md p-2">
+                        </div>
+
+                        <div id="reservaEstadoContainer" class="admin-only hidden"> 
+                             <label for="reservaEstado" class="block text-sm font-medium text-gray-700">Estado</label>
+                             <select id="reservaEstado" class="mt-1 block w-full border border-gray-300 rounded-md p-2">
+                                 <option value="pagado">Pagado</option>
+                                 <option value="pendiente">Pendiente</option>
+                                 <option value="cancelada">Cancelada</option>
+                             </select>
+                        </div>
+
+                    </div>
+                    
+                    <div id="pagoComprobanteContainer" class="bg-gray-50 p-4 rounded-md col-span-1 md:col-span-4 border border-dashed border-gray-300 admin-only hidden mt-4">
+                        <h3 class="text-lg font-semibold mb-3 text-gray-700">Datos de Pago (Solo Admin)</h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                             <div>
+                                <label for="comprobanteFile" class="block text-sm font-medium text-gray-700">Comprobante (No modificable aquí)</label>
+                                <input type="file" id="comprobanteFile" disabled class="mt-1 block w-full p-1 border border-gray-300 rounded-md">
+                            </div>
+                            
+                            <div>
+                                <label for="pagoBanco" class="block text-sm font-medium text-gray-700">Banco Depositante</label>
+                                <input type="text" id="pagoBanco" class="mt-1 block w-full border border-gray-300 rounded-md p-2" placeholder="Ej: Banco Agrícola">
+                            </div>
+
+                            <div>
+                                <label for="pagoTransferencia" class="block text-sm font-medium text-gray-700">No. Transferencia/Boleta</label>
+                                <input type="text" id="pagoTransferencia" class="mt-1 block w-full border border-gray-300 rounded-md p-2" placeholder="Código de 6 a 10 dígitos">
+                            </div>
+                        </div>
+                        
+                        <a id="comprobanteLinkView" href="#" target="_blank" class="mt-2 text-blue-500 hover:text-blue-700 text-sm hidden">Ver Comprobante Actual</a>
+                    </div>
+
+
+                    <input type="hidden" id="reservaId">
+                    <div class="mt-6">
+                        <button type="submit" id="btnSubmitFormReserva" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded transition">
+                            Guardar Reserva
+                        </button>
+                        <button type="button" id="btnCancelEditReserva" class="ml-2 text-gray-600 hover:text-gray-800 hidden">
+                            Cancelar Edición
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-xl mb-6 admin-only hidden">
+                <h2 class="text-xl font-semibold mb-4">Actividad de Clientes (Reservas por Email) 📈</h2>
+                <canvas id="reservasChart" width="400" height="150"></canvas>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-xl admin-only hidden">
+                <h2 class="text-xl font-semibold mb-4">Detalle de Todas las Reservas</h2>
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead>
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cancha</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuario (Email)</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha/Hora Reserva</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Creación</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado y Pago</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reservasList" class="bg-white divide-y divide-gray-200">
+                        </tbody>
+                </table>
+            </div>
+            
+            <div class="bg-white p-6 rounded-lg shadow-xl user-only hidden">
+                <h2 class="text-xl font-semibold mb-4">Mis Reservas</h2>
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead>
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cancha</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha/Hora Reserva</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Creación</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Detalles de Pago</th>
+                        </tr>
+                    </thead>
+                    <tbody id="misReservasList" class="bg-white divide-y divide-gray-200">
+                        </tbody>
+                </table>
+            </div>
+            </div>
+    </div>
+    
+    <script type="module">
+        // --- 1. IMPORTACIONES ---
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, 
+            collection, 
+            addDoc, 
+            doc, 
+            updateDoc, 
+            deleteDoc, 
+            onSnapshot, 
+            query, 
+            where,
+            getDocs, 
+            getDoc, 
+            serverTimestamp 
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- 2. CONFIGURACIÓN ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyAWCPbrKbfVNieWdjIWOmsr27sqAWzEefk", 
+            authDomain: "profutbolapp.firebaseapp.com",
+            projectId: "profutbolapp",
+            storageBucket: "profutbolapp.firebasestorage.app",
+            messagingSenderId: "187277252854",
+            appId: "1:187277252854:web:73d371c14b28f764de74d7"
+        };
+        
+        const LOGIN_PAGE = 'login.html'; 
+        const PAGO_PAGE = 'pago.html'; 
+        const PUBLIC_COLLECTION_PATH = 'canchas';
+        const RESERVAS_COLLECTION_PATH = 'reservas';
+        const USUARIOS_COLLECTION_PATH = 'usuarios'; 
+        
+        let auth;
+        let db;
+        let chartInstance = null;
+        let allReservas = []; 
+        let userCache = {}; 
+        let currentUserId = null; 
+        let currentUserRole = null; 
+
+        // Elementos del DOM - GENERALES
+        const btnLogout = document.getElementById('btnLogout'); 
+        const reservaForm = document.getElementById('reservaForm');
+        const formTitleReserva = document.getElementById('formTitleReserva');
+        const btnCancelEditReserva = document.getElementById('btnCancelEditReserva');
+
+        // Elementos del DOM - ADMINISTRADOR
+        const reservasList = document.getElementById('reservasList');
+        const reservasChartContext = document.getElementById('reservasChart').getContext('2d');
+        const pagoComprobanteContainer = document.getElementById('pagoComprobanteContainer');
+        const comprobanteLinkView = document.getElementById('comprobanteLinkView');
+        const pagoBanco = document.getElementById('pagoBanco');
+        const pagoTransferencia = document.getElementById('pagoTransferencia');
+        
+        // Elementos del DOM - AMBOS
+        const inputReservaId = document.getElementById('reservaId');
+        const inputReservaFechaHora = document.getElementById('reservaFechaHora');
+        const selectReservaCancha = document.getElementById('reservaCanchaSelect');
+
+
+        // Elementos del DOM - ESPECÍFICOS POR ROL
+        const misReservasList = document.getElementById('misReservasList');
+        const inputReservaClienteNombre = document.getElementById('reservaClienteNombre');
+        const searchResults = document.getElementById('searchResults');
+        const inputReservaUserId = document.getElementById('reservaUserId');
+        const inputReservaUserEmail = document.getElementById('reservaUserEmail');
+        const reservaEstadoContainer = document.getElementById('reservaEstadoContainer');
+        const selectReservaEstado = document.getElementById('reservaEstado');
+        
+        // --- 3. FUNCIONES DE UTILIDAD ---
+
+        function showMessage(text, colorClass) {
+            console.log(text, colorClass);
+            // Implementar un toast o modal aquí si se desea mostrar el mensaje al usuario
+        }
+        
+        function formatDate(timestamp) {
+            const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            if (timestamp && timestamp.toDate) {
+                return timestamp.toDate().toLocaleString('es-GT', options);
+            }
+            return 'N/A';
+        }
+
+        function formatTimestampToInput(timestamp) {
+            if (!timestamp) return '';
+            let date;
+            
+            if (timestamp.toDate) {
+                date = timestamp.toDate();
+            } else if (timestamp instanceof Date) {
+                date = timestamp;
+            } else {
+                return '';
+            }
+            
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
+        }
+
+        // --- 4. LÓGICA DE FIRESTORE: CANCHAS Y USUARIOS ---
+
+        function fillCanchaSelector(canchas) {
+            selectReservaCancha.innerHTML = '<option value="">-- Seleccione una cancha --</option>';
+            canchas.forEach(cancha => {
+                const option = document.createElement('option');
+                option.value = cancha.nombre; 
+                option.textContent = cancha.nombre; 
+                selectReservaCancha.appendChild(option);
+            });
+        }
+
+        function startCanchasLoader() {
+            try {
+                const q = query(collection(db, PUBLIC_COLLECTION_PATH));
+                onSnapshot(q, (snapshot) => {
+                    let canchas = [];
+                    snapshot.forEach((doc) => {
+                        canchas.push({ id: doc.id, ...doc.data() });
+                    });
+                    fillCanchaSelector(canchas);
+                });
+            } catch (error) {
+                console.error("Error al iniciar el loader de canchas:", error);
+            }
+        }
+        
+        async function fetchUserEmailByUID(uid) {
+            if (userCache[uid]) {
+                return userCache[uid];
+            }
+            try {
+                const userRef = doc(db, USUARIOS_COLLECTION_PATH, uid);
+                const userSnap = await getDoc(userRef);
+
+                if (userSnap.exists()) {
+                    const userData = userSnap.data();
+                    userCache[uid] = userData.email || 'Email No Encontrado'; 
+                    return userCache[uid];
+                } else {
+                    userCache[uid] = 'Usuario Eliminado';
+                    return 'Usuario Eliminado';
+                }
+            } catch (error) {
+                console.error("Error al buscar usuario por UID:", uid, error);
+                userCache[uid] = 'Error de Búsqueda';
+                return 'Error de Búsqueda';
+            }
+        }
+
+        async function enrichReservasWithUserData(reservas) {
+            const promises = reservas.map(async (reserva) => {
+                if (reserva.userEmail) return reserva;
+                if (reserva.id_usuario) {
+                    reserva.userEmail = await fetchUserEmailByUID(reserva.id_usuario);
+                }
+                return reserva;
+            });
+            return Promise.all(promises);
+        }
+
+        // --- 5. LÓGICA DE INTERACCIÓN Y RESERVAS ---
+
+        // BÚSQUEDA DE CLIENTES (Solo para Admin)
+        async function searchClients(queryText) {
+            if (currentUserRole !== 'admin') return; 
+            
+            searchResults.innerHTML = '';
+            
+            if (queryText.length < 2) {
+                searchResults.classList.add('hidden');
+                return;
+            }
+
+            try {
+                const start = queryText.toLowerCase();
+                const end = queryText.toLowerCase() + '\uf8ff'; 
+
+                const q = query(
+                    collection(db, USUARIOS_COLLECTION_PATH),
+                    where('nombre', '>=', start),
+                    where('nombre', '<=', end)
+                );
+
+                const snapshot = await getDocs(q); 
+                
+                if (snapshot.empty) {
+                    searchResults.innerHTML = '<div class="p-2 text-gray-500">No se encontraron clientes.</div>';
+                    searchResults.classList.remove('hidden');
+                    return;
+                }
+
+                snapshot.forEach(doc => {
+                    const client = doc.data();
+                    const resultItem = document.createElement('div');
+                    resultItem.className = 'p-2 cursor-pointer hover:bg-gray-100 text-sm';
+                    resultItem.textContent = `${client.nombre} ${client.apellido} (${client.email})`;
+                    
+                    resultItem.addEventListener('click', () => selectClient(client, doc.id));
+                    searchResults.appendChild(resultItem);
+                });
+
+                searchResults.classList.remove('hidden');
+
+            } catch (error) {
+                console.error("Error buscando clientes:", error);
+            }
+        }
+        
+        function selectClient(client, uid) {
+            inputReservaClienteNombre.value = `${client.nombre} ${client.apellido}`; 
+            inputReservaUserId.value = uid;
+            inputReservaUserEmail.value = client.email;
+            searchResults.classList.add('hidden'); 
+        }
+        
+        document.addEventListener('click', (e) => {
+            if (e.target !== inputReservaClienteNombre && !searchResults.contains(e.target)) {
+                searchResults.classList.add('hidden');
+            }
+        });
+        
+        inputReservaClienteNombre.addEventListener('input', (e) => {
+             searchClients(e.target.value);
+            if (e.target.value.length === 0 && currentUserRole === 'admin') {
+                inputReservaUserId.value = '';
+                inputReservaUserEmail.value = '';
+            }
+        });
+
+
+        // AÑADIR/EDITAR RESERVA (Crea PENDIENTE y redirige a pago.html con ID)
+        async function handleAddEditReserva(e) {
+            e.preventDefault();
+            const id = inputReservaId.value;
+            const isEditing = !!id;
+            
+            // 1. Validaciones iniciales
+            if (!selectReservaCancha.value) {
+                showMessage("Debes seleccionar una cancha.", 'bg-red-500');
+                return;
+            }
+
+            const dateInput = inputReservaFechaHora.value;
+            if (!dateInput) {
+                 showMessage("Debes seleccionar una fecha y hora.", 'bg-red-500');
+                 return;
+            }
+            
+            const dateObj = new Date(dateInput);
+
+            // --- 2. LÓGICA DE USUARIO NORMAL: CREAR RESERVA PENDIENTE Y REDIRIGIR A PAGO.HTML ---
+            if (currentUserRole !== 'admin' && !isEditing) {
+                
+                const clientUID = currentUserId; 
+                const clientEmail = auth.currentUser.email;
+
+                const reservaData = {
+                    id_usuario: clientUID,      
+                    id_cancha: selectReservaCancha.value,       
+                    estado_pago: 'pendiente',     // Siempre inicia como PENDIENTE
+                    fecha_reserva: dateObj,                     
+                    userEmail: clientEmail,     
+                    userName: '',  // Se puede rellenar si se tiene el dato
+                    fechaCreacion: serverTimestamp(),
+                    
+                    // Campos de pago iniciales (vacíos)
+                    pago_banco: null, 
+                    pago_transferencia: null,
+                    pago_comprobante_url: null,
+                };
+                
+                try {
+                    const docRef = await addDoc(collection(db, RESERVAS_COLLECTION_PATH), reservaData);
+                    
+                    // Redirigir a la página de pago con el ID de la nueva reserva
+                    alert("Reserva creada. A continuación sube el comprobante de pago.");
+                    window.location.href = `${PAGO_PAGE}?reservaId=${docRef.id}`;
+                    return; 
+                } catch (error) {
+                    console.error("Error al crear la reserva pendiente:", error);
+                    showMessage(`Error al crear la reserva: ${error.message}`, 'bg-red-500');
+                    return;
+                }
+            }
+            
+            // --- 3. LÓGICA DE ADMINISTRADOR: GUARDAR/EDITAR DIRECTAMENTE ---
+            
+            let clientUID = inputReservaUserId.value; 
+            let clientEmail = inputReservaUserEmail.value;
+            let clientName = inputReservaClienteNombre.value;
+            let estadoPago = selectReservaEstado.value;
+            
+             // Lógica para mantener datos del cliente en modo edición si no se ha buscado uno nuevo
+            if (isEditing) {
+                const currentReserva = allReservas.find(r => r.id === id);
+                if (currentReserva) {
+                    clientUID = clientUID || currentReserva.id_usuario; 
+                    clientEmail = clientEmail || currentReserva.userEmail;
+                    clientName = clientName || currentReserva.userName;
+                }
+            } else if (!clientEmail) {
+                // Si no estamos editando Y no hay un usuario seleccionado, detenemos.
+                showMessage("El administrador debe seleccionar un cliente válido para crear una reserva.", 'bg-red-500');
+                return;
+            }
+
+            const reservaData = {
+                id_usuario: clientUID,      
+                id_cancha: selectReservaCancha.value,       
+                estado_pago: estadoPago,     
+                fecha_reserva: dateObj,                     
+                userEmail: clientEmail,     
+                userName: clientName,  
+                
+                // Campos de pago del Admin (solo para edición/actualización manual)
+                pago_banco: pagoBanco.value || null,
+                pago_transferencia: pagoTransferencia.value || null,
+                // Si se está editando, se mantiene la URL del comprobante si no se modifica
+                pago_comprobante_url: isEditing ? allReservas.find(r => r.id === id)?.pago_comprobante_url : null,
+            };
+
+            try {
+                if (isEditing) {
+                    const reservaRef = doc(db, RESERVAS_COLLECTION_PATH, id);
+                    await updateDoc(reservaRef, reservaData);
+                    showMessage("Reserva actualizada con éxito.", 'bg-green-500');
+                } else {
+                    reservaData.fechaCreacion = serverTimestamp();
+                    // Aseguramos que los campos de pago estén nulos al crear desde Admin
+                    reservaData.pago_banco = null;
+                    reservaData.pago_transferencia = null;
+                    reservaData.pago_comprobante_url = null; 
+                    
+                    await addDoc(collection(db, RESERVAS_COLLECTION_PATH), reservaData);
+                    showMessage("Nueva reserva creada con éxito (Admin).", 'bg-green-500');
+                }
+                
+                // Limpieza del formulario
+                reservaForm.reset();
+                inputReservaId.value = '';
+                inputReservaUserId.value = '';
+                inputReservaUserEmail.value = '';
+                inputReservaClienteNombre.value = '';
+                formTitleReserva.textContent = 'Crear Nueva Reserva';
+                btnCancelEditReserva.classList.add('hidden');
+                comprobanteLinkView.classList.add('hidden'); // Limpiar enlace de comprobante
+                pagoBanco.value = '';
+                pagoTransferencia.value = '';
+
+
+            } catch (error) {
+                console.error("Error al guardar reserva:", error);
+                showMessage(`Error al guardar reserva: ${error.message}`, 'bg-red-500');
+            }
+        }
+
+        // EDITAR RESERVA (Solo llamado por Admin)
+        function handleEditReserva(e) {
+            const reservaId = e.currentTarget.dataset.id;
+            const reserva = allReservas.find(r => r.id === reservaId);
+
+            if (reserva && currentUserRole === 'admin') {
+                // Rellenar campos de Admin
+                inputReservaClienteNombre.value = reserva.userName || '';
+                inputReservaUserId.value = reserva.id_usuario || ''; 
+                inputReservaUserEmail.value = reserva.userEmail || '';
+                
+                inputReservaId.value = reserva.id;
+                selectReservaCancha.value = reserva.id_cancha || ''; 
+                selectReservaEstado.value = reserva.estado_pago || 'pagado'; 
+                inputReservaFechaHora.value = formatTimestampToInput(reserva.fecha_reserva); 
+                
+                // Rellenar campos de pago (Solo Admin)
+                pagoBanco.value = reserva.pago_banco || '';
+                pagoTransferencia.value = reserva.pago_transferencia || '';
+                
+                if (reserva.pago_comprobante_url) {
+                    comprobanteLinkView.href = reserva.pago_comprobante_url;
+                    comprobanteLinkView.textContent = "Ver Comprobante Actual";
+                    comprobanteLinkView.classList.remove('hidden');
+                } else {
+                    comprobanteLinkView.classList.add('hidden');
+                }
+                
+                formTitleReserva.textContent = `Editar Reserva: ${reserva.id.substring(0, 4)}...`;
+                btnCancelEditReserva.classList.remove('hidden');
+                
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+        
+        // APROBAR RESERVA (Solo llamado por Admin)
+        async function handleApproveReserva(e) {
+            const reservaId = e.currentTarget.dataset.id;
+            
+            if (currentUserRole !== 'admin') return; 
+            
+            if (confirm(`¿Estás seguro de que quieres APROBAR el pago de la reserva ${reservaId.substring(0, 4)}...?`)) {
+                try {
+                    const reservaRef = doc(db, RESERVAS_COLLECTION_PATH, reservaId);
+                    await updateDoc(reservaRef, { estado_pago: 'pagado' });
+                    showMessage("Pago de reserva aprobado con éxito.", 'bg-green-500');
+                } catch (error) {
+                    console.error("Error al aprobar la reserva:", error);
+                    showMessage("Error al aprobar la reserva.", 'bg-red-500');
+                }
+            }
+        }
+        
+        // ELIMINAR RESERVA (Solo llamado por Admin)
+        async function handleDeleteReserva(e) {
+            const reservaId = e.currentTarget.dataset.id;
+
+            if (currentUserRole !== 'admin') return; 
+
+            if (confirm(`¿Estás seguro de que quieres eliminar la reserva ${reservaId.substring(0, 4)}...?`)) {
+                try {
+                    const reservaRef = doc(db, RESERVAS_COLLECTION_PATH, reservaId);
+                    await deleteDoc(reservaRef);
+                    showMessage("Reserva eliminada con éxito.", 'bg-green-500');
+                } catch (error) {
+                    console.error("Error al eliminar la reserva:", error);
+                    showMessage("Error al eliminar la reserva.", 'bg-red-500');
+                }
+            }
+        }
+        
+
+        // --- 6. LISTENERS DE RESERVAS (Adaptado a Roles) ---
+
+        function startReservasListener(uidFilter = null) {
+            try {
+                let q;
+                
+                if (uidFilter) {
+                    // FILTRO DE USUARIO NORMAL: Solo sus reservas.
+                    q = query(
+                        collection(db, RESERVAS_COLLECTION_PATH),
+                        where('id_usuario', '==', uidFilter)
+                    );
+                } else {
+                    // VISTA DE ADMIN: Todas las reservas.
+                    q = query(collection(db, RESERVAS_COLLECTION_PATH));
+                }
+
+                onSnapshot(q, async (snapshot) => { 
+                    allReservas = []; 
+                    let userActivity = {};
+
+                    snapshot.forEach((doc) => {
+                        const reserva = { id: doc.id, ...doc.data() };
+                        allReservas.push(reserva);
+                    });
+                    
+                    const enrichedReservas = await enrichReservasWithUserData(allReservas);
+                    
+                    // Lógica de ordenamiento: Pendientes primero
+                    enrichedReservas.sort((a, b) => {
+                        if (a.estado_pago === 'pendiente' && b.estado_pago !== 'pendiente') return -1;
+                        if (a.estado_pago !== 'pendiente' && b.estado_pago === 'pendiente') return 1;
+                        return 0; 
+                    });
+                    
+                    // Si no hay filtro, es admin (actualiza ambas tablas/gráfico)
+                    if (!uidFilter) { 
+                        enrichedReservas.forEach(reserva => {
+                            const userEmail = reserva.userEmail || 'Sin Email'; 
+                            userActivity[userEmail] = (userActivity[userEmail] || 0) + 1;
+                        });
+                        displayReservasAdmin(enrichedReservas); 
+                        updateChart(userActivity);
+                    } else {
+                        // Si hay filtro, es usuario (solo actualiza su tabla)
+                        displayReservasUsuario(enrichedReservas); 
+                    }
+                });
+            } catch (error) {
+                console.error("Error al iniciar el listener de reservas:", error);
+            }
+        }
+
+        // FUNCIÓN: Display para la tabla del ADMIN (Muestra Pago y Acciones)
+        function displayReservasAdmin(reservas) {
+            reservasList.innerHTML = '';
+            
+            reservas.forEach(reserva => {
+                const row = document.createElement('tr');
+                
+                const fechaReserva = formatDate(reserva.fecha_reserva);
+                const fechaCreacion = formatDate(reserva.fechaCreacion);
+
+                let actionButtons = `<button data-id="${reserva.id}" class="btn-delete-reserva text-red-600 hover:text-red-900">Eliminar</button>`;
+                let estadoBadge = `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">${reserva.estado_pago || 'Confirmada'}</span>`;
+                let pagoInfo = '';
+
+                // LÓGICA DE VISUALIZACIÓN DE PAGO
+                if (reserva.estado_pago === 'pendiente') {
+                    // Si está pendiente, busca la información de pago
+                    if (reserva.pago_comprobante_url) {
+                        pagoInfo = `
+                            <p class="text-xs text-gray-700 font-medium mt-1">
+                                <a href="${reserva.pago_comprobante_url}" target="_blank" class="text-blue-500 hover:underline">Ver Comprobante</a>
+                            </p>
+                            <p class="text-xs text-gray-500">Banco: ${reserva.pago_banco || 'N/A'} | No. Transf: ${reserva.pago_transferencia || 'N/A'}</p>
+                        `;
+                    } else {
+                        pagoInfo = `<p class="text-xs text-red-500 mt-1">Comprobante pendiente de subida</p>`;
+                    }
+                    
+                    // Botones de acción para estado pendiente
+                    actionButtons = `
+                        <button data-id="${reserva.id}" class="btn-approve-reserva text-green-600 hover:text-green-900 font-semibold mr-3">Aprobar</button>
+                        <button data-id="${reserva.id}" class="btn-edit-reserva text-indigo-600 hover:text-indigo-900 mr-3">Editar</button>
+                        ${actionButtons}
+                    `;
+                    estadoBadge = `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">PENDIENTE</span>`;
+
+                } else if (reserva.estado_pago === 'pagado') {
+                    // Botones para otros estados (Pagado, Cancelado)
+                    actionButtons = `
+                        <button data-id="${reserva.id}" class="btn-edit-reserva text-indigo-600 hover:text-indigo-900 mr-3">Editar</button>
+                        ${actionButtons}
+                    `;
+                    estadoBadge = `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">PAGADO</span>`;
+                     if (reserva.pago_comprobante_url) {
+                         pagoInfo = `<p class="text-xs text-gray-700 font-medium mt-1"><a href="${reserva.pago_comprobante_url}" target="_blank" class="text-blue-500 hover:underline">Comprobante OK</a></p>`;
+                    }
+                } else if (reserva.estado_pago === 'cancelada') {
+                    estadoBadge = `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">CANCELADA</span>`;
+                     actionButtons = `
+                        <button data-id="${reserva.id}" class="btn-edit-reserva text-indigo-600 hover:text-indigo-900 mr-3">Editar</button>
+                        ${actionButtons}
+                    `;
+                }
+                
+                // Se inserta la información de pago junto con el estado
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">${reserva.id_cancha || 'N/A'}</td>      
+                    <td class="px-6 py-4 whitespace-nowrap">${reserva.userEmail || 'N/A'}</td>     
+                    <td class="px-6 py-4 whitespace-nowrap">${fechaReserva}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500">${fechaCreacion}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        ${estadoBadge}
+                        ${pagoInfo}
+                    </td> 
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        ${actionButtons}
+                    </td>
+                `;
+                reservasList.appendChild(row);
+            });
+
+            // Se reasignan los listeners a los botones generados
+            document.querySelectorAll('.btn-approve-reserva').forEach(btn => btn.addEventListener('click', handleApproveReserva));
+            document.querySelectorAll('.btn-edit-reserva').forEach(btn => btn.addEventListener('click', handleEditReserva));
+            document.querySelectorAll('.btn-delete-reserva').forEach(btn => btn.addEventListener('click', handleDeleteReserva));
+        }
+
+        // FUNCIÓN: Display para la tabla del USUARIO NORMAL (Vista limitada)
+        function displayReservasUsuario(reservas) {
+            misReservasList.innerHTML = '';
+            
+            reservas.forEach(reserva => {
+                const row = document.createElement('tr');
+                
+                const fechaReserva = formatDate(reserva.fecha_reserva);
+                const fechaCreacion = formatDate(reserva.fechaCreacion);
+
+                let statusBadge = '';
+                let pagoDetail = '';
+
+                if (reserva.estado_pago === 'pendiente') {
+                    statusBadge = `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">PENDIENTE</span>`;
+                    pagoDetail = `<p class="text-xs text-gray-500 mt-1">Pendiente de comprobante o aprobación.</p>`;
+                    // Si está pendiente y aún no tiene comprobante, ofrece el botón de subir
+                    if (!reserva.pago_comprobante_url) {
+                        pagoDetail += `<a href="${PAGO_PAGE}?reservaId=${reserva.id}" class="text-indigo-600 hover:text-indigo-800 text-xs font-semibold mt-1 block">Subir Comprobante ahora</a>`;
+                    }
+                } else if (reserva.estado_pago === 'pagado') {
+                    statusBadge = `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">CONFIRMADA</span>`;
+                    pagoDetail = `<p class="text-xs text-green-500 mt-1">¡Pago Aprobado!</p>`;
+                } else if (reserva.estado_pago === 'cancelada') {
+                    statusBadge = `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">CANCELADA</span>`;
+                    pagoDetail = `<p class="text-xs text-red-500 mt-1">Contacta al administrador.</p>`;
+                }
+
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">${reserva.id_cancha || 'N/A'}</td>      
+                    <td class="px-6 py-4 whitespace-nowrap">${fechaReserva}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500">${fechaCreacion}</td>
+                    <td class="px-6 py-4 whitespace-nowrap font-medium">${statusBadge}</td> 
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        ${pagoDetail}
+                        ${reserva.pago_comprobante_url ? `<a href="${reserva.pago_comprobante_url}" target="_blank" class="text-blue-500 hover:underline text-xs">Ver Comprobante Subido</a>` : ''}
+                    </td>
+                `;
+                misReservasList.appendChild(row);
+            });
+        }
+        
+        function updateChart(userActivity) {
+            const labels = Object.keys(userActivity);
+            const data = Object.values(userActivity);
+            if (chartInstance) chartInstance.destroy();
+
+            chartInstance = new Chart(reservasChartContext, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Reservas Realizadas',
+                        data: data,
+                        backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: { y: { beginAtZero: true } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+        
+        // --- FUNCIÓN CRÍTICA PARA CHEQUEAR EL ROL DE ADMINISTRADOR ---
+        async function getUserRole(uid) {
+            try {
+                const userRef = doc(db, USUARIOS_COLLECTION_PATH, uid);
+                const userSnap = await getDoc(userRef);
+                if (userSnap.exists()) {
+                    return userSnap.data().rol; 
+                }
+                return null;
+            } catch (error) {
+                console.error("Error al obtener rol del usuario:", error);
+                return null;
+            }
+        }
+
+        // --- 7. INICIALIZACIÓN Y SEGURIDAD FINAL (Control de Flujo) ---
+        async function initializeFirebase() {
+            try {
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app, 'base1reservas');
+
+                // Elementos del DOM a manipular por rol
+                const adminOnlyElements = document.querySelectorAll('.admin-only');
+                const userOnlyElements = document.querySelectorAll('.user-only');
+                const searchContainer = document.querySelector('.search-container');
+
+
+                onAuthStateChanged(auth, async (user) => { 
+                    if (!user) {
+                        window.location.href = LOGIN_PAGE; 
+                        return;
+                    } 
+                    
+                    currentUserId = user.uid;
+                    const userRole = await getUserRole(user.uid);
+                    currentUserRole = userRole;
+
+                    if (userRole === 'admin') {
+                        // ROL ADMIN: Muestra todo, inicia listeners sin filtro.
+                        adminOnlyElements.forEach(el => el.classList.remove('hidden'));
+                        userOnlyElements.forEach(el => el.classList.add('hidden')); 
+                        
+                        // Aseguramos que los campos del admin estén visibles
+                        searchContainer.classList.remove('hidden'); 
+                        reservaEstadoContainer.classList.remove('hidden'); 
+                        pagoComprobanteContainer.classList.remove('hidden'); // Mostrar panel de pago para Admin
+
+                        startCanchasLoader(); 
+                        startReservasListener(); // Sin filtro
+                        
+                    } else {
+                        // ROL USUARIO: Vista limitada, inicia listeners CON filtro.
+                        adminOnlyElements.forEach(el => el.classList.add('hidden')); 
+                        userOnlyElements.forEach(el => el.classList.remove('hidden')); 
+                        
+                        // Ocultamos los campos del admin y el panel de pago
+                        searchContainer.classList.add('hidden'); 
+                        reservaEstadoContainer.classList.add('hidden'); 
+                        pagoComprobanteContainer.classList.add('hidden'); // Ocultar panel de pago al usuario
+
+                        startCanchasLoader(); 
+                        startReservasListener(user.uid); // Con filtro
+                    }
+                    
+                });
+
+            } catch (error) {
+                console.error("Error fatal al inicializar Firebase:", error);
+            }
+        }
+
+        // --- 8. LISTENERS FINALES ---
+        if (btnLogout) {
+            btnLogout.addEventListener('click', async () => {
+                try { 
+                    await signOut(auth);
+                    window.location.href = LOGIN_PAGE;
+                } catch (error) { 
+                    console.error("Error al cerrar sesión:", error); 
+                }
+            });
+        }
+        
+        reservaForm.addEventListener('submit', handleAddEditReserva);
+        btnCancelEditReserva.addEventListener('click', () => {
+            reservaForm.reset();
+            inputReservaId.value = '';
+            inputReservaUserId.value = '';
+            inputReservaUserEmail.value = '';
+            inputReservaClienteNombre.value = '';
+            formTitleReserva.textContent = 'Crear Nueva Reserva';
+            btnCancelEditReserva.classList.add('hidden');
+            comprobanteLinkView.classList.add('hidden'); // Limpiar enlace de comprobante
+            pagoBanco.value = '';
+            pagoTransferencia.value = '';
+        });
+
+        initializeFirebase();
     </script>
-  </body>
+</body>
 </html>
