@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro de Usuarios - ProFutbol</title>
+    <title>Acceso Usuarios - ProFutbol</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
@@ -12,76 +12,52 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            font-family: 'Inter', sans-serif;
         }
         .card {
             background: white;
-            padding: 2.5rem;
-            border-radius: 1rem;
-            box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.1), 0 5px 15px -5px rgba(0, 0, 0, 0.04);
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             width: 100%;
-            max-width: 450px;
-        }
-        .input-field {
-            border: 1px solid #d1d5db;
-            padding: 0.75rem;
-            border-radius: 0.5rem;
-            transition: border-color 0.2s;
-        }
-        .input-field:focus {
-            border-color: #10b981; /* Green-500 */
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+            max-width: 400px;
         }
     </style>
 </head>
 <body>
     <div class="card">
-        <h2 class="text-3xl font-extrabold text-green-700 mb-2 text-center">¡Únete a ProFutbol!</h2>
-        <p class="mb-6 text-gray-600 text-center">Crea tu cuenta para empezar a reservar canchas.</p>
+        <h2 class="text-2xl font-bold text-green-700 mb-4">Acceso de Usuarios</h2>
+        <p class="mb-6 text-gray-600">Ingresa tus credenciales para acceder al sistema de reservas.</p>
 
-        <form id="registroForm">
-            <div id="message" class="mb-4 p-3 rounded-lg text-sm hidden" role="alert"></div>
-
-            <div class="mb-4">
-                <label for="regNombre" class="block text-sm font-semibold text-gray-700 mb-1">Nombre</label>
-                <input type="text" id="regNombre" required class="input-field block w-full" placeholder="Tu nombre">
-            </div>
+        <form id="loginAdminForm">
+            <div id="message" class="mb-4 p-3 rounded text-sm hidden"></div>
 
             <div class="mb-4">
-                <label for="regApellido" class="block text-sm font-semibold text-gray-700 mb-1">Apellido</label>
-                <input type="text" id="regApellido" required class="input-field block w-full" placeholder="Tu apellido">
-            </div>
-
-            <div class="mb-4">
-                <label for="regEmail" class="block text-sm font-semibold text-gray-700 mb-1">Correo Electrónico</label>
-                <input type="email" id="regEmail" required class="input-field block w-full" placeholder="ejemplo@correo.com">
+                <label for="loginEmail" class="block text-sm font-medium text-gray-700">Correo Electrónico</label>
+                <input type="email" id="loginEmail" required class="mt-1 block w-full border border-gray-300 rounded-md p-2" placeholder="usuario@ejemplo.com">
             </div>
 
             <div class="mb-6">
-                <label for="regPassword" class="block text-sm font-semibold text-gray-700 mb-1">Contraseña</label>
-                <input type="password" id="regPassword" required class="input-field block w-full" placeholder="Mínimo 6 caracteres">
+                <label for="loginPassword" class="block text-sm font-medium text-gray-700">Contraseña</label>
+                <input type="password" id="loginPassword" required class="mt-1 block w-full border border-gray-300 rounded-md p-2">
             </div>
 
-            <button type="submit" id="btnRegistro" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 transform hover:scale-105">
-                Crear Cuenta
+            <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded transition duration-200">
+                Iniciar Sesión
             </button>
         </form>
 
-        <p class="mt-6 text-center text-sm">
-            ¿Ya tienes cuenta? <a href="login.html" class="text-green-600 hover:text-green-800 font-bold">Inicia Sesión aquí.</a>
+        <p class="mt-4 text-center text-sm">
+            ¿Aún no tienes cuenta? <a href="registro.html" class="text-green-600 hover:text-green-800 font-medium">Regístrate aquí.</a>
         </p>
     </div>
 
     <script type="module">
         // --- 1. IMPORTACIONES ---
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-        // --- 2. CONSTANTES GLOBALES Y CONFIGURACIÓN ---
-        const FIREBASE_CONFIG = {
-            // Utiliza la configuración del login.html para la consistencia
+        // --- 2. CONFIGURACIÓN (IDÉNTICA a index.html) ---
+        const firebaseConfig = {
             apiKey: "AIzaSyAWCPbrKbfVNieWdjIWOmsr27sqAWzEefk", 
             authDomain: "profutbolapp.firebaseapp.com",
             projectId: "profutbolapp",
@@ -89,20 +65,18 @@
             messagingSenderId: "187277252854",
             appId: "1:187277252854:web:73d371c14b28f764de74d7"
         };
-        const LOGIN_PAGE = 'login.html';
-        const DB_ID = 'base1reservas'; // ID de la base de datos secundaria (según manual técnico)
-
-        // --- 3. INICIALIZACIÓN DE FIREBASE ---
-        const app = initializeApp(FIREBASE_CONFIG);
+        
+        // --- 3. INICIALIZACIÓN ---
+        const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        const db = getFirestore(app, DB_ID); // Conecta a la BD secundaria
-
-        // --- 4. REFERENCIAS DEL DOM ---
-        const registroForm = document.getElementById('registroForm');
+        
+        // Elementos del DOM
+        const loginForm = document.getElementById('loginAdminForm');
+        const emailInput = document.getElementById('loginEmail');
+        const passwordInput = document.getElementById('loginPassword');
         const messageBox = document.getElementById('message');
-        const btnRegistro = document.getElementById('btnRegistro');
 
-        // --- 5. FUNCIÓN AUXILIAR PARA MENSAJES ---
+        // --- 4. FUNCIÓN AUXILIAR PARA MENSAJES ---
         function showMessage(text, isError) {
             messageBox.textContent = text;
             messageBox.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-green-100', 'text-green-700');
@@ -113,59 +87,35 @@
             }
         }
 
-        // --- 6. MANEJADOR DEL REGISTRO ---
-        registroForm.addEventListener('submit', async (e) => {
+        // --- 5. LÓGICA DE LOGIN ---
+        loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+
+            const email = emailInput.value;
+            const password = passwordInput.value;
             
-            const nombre = document.getElementById('regNombre').value.trim();
-            const apellido = document.getElementById('regApellido').value.trim();
-            const email = document.getElementById('regEmail').value.trim();
-            const password = document.getElementById('regPassword').value;
-
-            if (password.length < 6) {
-                showMessage("La contraseña debe tener al menos 6 caracteres.", true);
-                return;
-            }
-
-            btnRegistro.disabled = true;
-            btnRegistro.textContent = 'Registrando...';
-            showMessage("Creando tu cuenta...", false);
+            showMessage("Iniciando sesión...", false);
 
             try {
-                // Paso 1: Crear el usuario en Firebase Authentication
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                const user = userCredential.user;
+                // Intenta iniciar sesión
+                await signInWithEmailAndPassword(auth, email, password);
                 
-                // Paso 2: Crear el documento de perfil en Firestore (¡Asignando el rol de 'usuario'!)
-                const userRef = doc(db, "usuarios", user.uid);
-                await setDoc(userRef, {
-                    nombre: nombre,
-                    apellido: apellido,
-                    email: user.email,
-                    rol: 'usuario', // <<-- ESTO ASEGURA QUE NO SEA ADMIN
-                    fecha_registro: serverTimestamp()
-                });
-                
-                showMessage("¡Registro exitoso! Serás redirigido en breve.", false);
-                
-                // Redirigir al login para que inicie sesión con su nueva cuenta
-                setTimeout(() => {
-                    window.location.href = LOGIN_PAGE;
-                }, 2000);
+                // Si tiene éxito, redirige a index.html (La verificación de rol se hará allí)
+                window.location.href = 'index.html';
 
             } catch (error) {
-                console.error("Error al registrar el usuario:", error);
+                console.error("Error al iniciar sesión:", error);
+                let errorMessage = "Credenciales incorrectas. Intenta de nuevo.";
                 
-                let errorMessage = "Ocurrió un error desconocido. Intenta más tarde.";
-                if (error.code === 'auth/email-already-in-use') {
-                    errorMessage = 'Este correo electrónico ya está registrado.';
-                } else if (error.code === 'auth/weak-password') {
-                    errorMessage = 'La contraseña es demasiado débil.';
+                if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                    errorMessage = 'Correo o contraseña inválidos.';
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMessage = 'El formato del correo electrónico es inválido.';
+                } else if (error.code === 'auth/too-many-requests') {
+                    errorMessage = 'Acceso bloqueado temporalmente debido a demasiados intentos fallidos.';
                 }
                 
                 showMessage(`Error: ${errorMessage}`, true);
-                btnRegistro.disabled = false;
-                btnRegistro.textContent = 'Crear Cuenta';
             }
         });
     </script>
